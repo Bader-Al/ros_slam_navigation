@@ -50,7 +50,7 @@ class UserInterface:
                 break
 
             elif menu_selection == StartUpMenu_Selection.Tour:
-                self.nextGoal = parser.get_positionNames() ## TODO :: Must update to use sorted verison!
+                self.nextGoal = parser.get_positionNames() 
                 break
 
             elif menu_selection  == StartUpMenu_Selection.SwitchUser:
@@ -99,7 +99,7 @@ class UserInterface:
         print("\n\n\nPublishing", locationName)
         print("with Coordinates: ")
         print(locationCoords)
-        print('\n[1] - Overide location\n[2] - Stop and go back\n\n[0] - Emergency STOP & SHUTDOWN\n\n')
+        print('\n[1] - Add location to que\n[2] - Clear location and start over\n\n[0] - Emergency STOP & SHUTDOWN\n\n')
         key = self.__getKey()
         return key
 
@@ -236,6 +236,7 @@ class UserInterface:
          except: print("Please enter a valid coordinate!")
         
         print("Z is not supported yet.. Skipping Z")
+        time.sleep(1)
         coords = Point(X ,Y ,Z)
         return coords
 

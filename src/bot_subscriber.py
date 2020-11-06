@@ -7,11 +7,14 @@ from nav_msgs.msg import Odometry
 
 
 
+
+
 class BotSubscriber: 
 
     def __init__(self, ):
         self.currentBotLocation = Point()
         self.listen_for_pose()
+        
         
 
 

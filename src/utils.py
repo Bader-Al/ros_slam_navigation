@@ -3,7 +3,7 @@ import math
 class CoordinatesUtils:
 
 
-  def getCoordinates_sortedByDistance(unsortedGoalsList, currentBotLocation, parser):
+  def getCoordinates_sortedByDistance(unsortedGoalsDictList, currentBotLocation, parser):
       ### NOT FOR PRODUCTION USE !
     ''' 
 
@@ -17,10 +17,11 @@ class CoordinatesUtils:
 
     '''
     dictList = []
-    for listItem in unsortedGoalsList:
+    for dictItem in unsortedGoalsDictList:
         tempDict = {}
-        goalName = listItem[0]
-        XY_coordinates = listItem[1]
+        goalName = dictItem['name']
+        XY_coordinates = dictItem['coordinates']
+        
         goalDistance = abs(0.5 * math.sqrt(((XY_coordinates[0]-currentBotLocation.x ) ** 2) + ((XY_coordinates[1]-currentBotLocation.y) ** 2)))
         tempDict.update({'name' : goalName ,"coordinates": XY_coordinates, 'distance' : goalDistance} )
         dictList.append(tempDict)

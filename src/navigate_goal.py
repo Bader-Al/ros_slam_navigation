@@ -8,10 +8,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import String
 
 
-action_demand = ""
-past_goal = Point()
-goalsList = []
-
+action_demand = "" 
  #define a client for to send goal requests to the move_base server through a SimpleActionClient
 ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
@@ -19,13 +16,13 @@ ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
 
 def listen_for_demands():
     rospy.Subscriber("goal_demands", String, set_demand )
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+    
+    
   
    
 
 def set_demand(demand):
-    global action_demand, ac     
+    global action_demand  
     
     if not demand.data: print('Waiting for demand [STOP, MOVE, CLEAR, etc.. ] ' )
  
@@ -36,27 +33,27 @@ def set_demand(demand):
     if demand.data == "STOP": ## This may conflict with the DRY principle but we did this for safety [incase global action_demand wasn't updated]    
         stop_movement()    
    
-
-    if action_demand == "MOVE":    
-        listen_for_goals()
-    if action_demand == "STOP":    
-        stop_movement()
+    if action_demand == "CLEAR":
+        ac.cancel_all_goals() 
+        print("Clearing..") 
     
 
 
 
 def listen_for_goals():     
-    rospy.Subscriber("goal_coordinates", Point, set_goal )
-    iterateThrough_goals()
+    rospy.Subscriber("goal_coordinates", Point, set_goal ) 
 
 
 def set_goal(incoming_goal): 
-    global ac, past_goal
-    # if the incoming goal isn't new.. simply break out of this function
-    if past_goal == incoming_goal: return
-    else: 
-        goalsList.append(incoming_goal)
-        past_goal = incoming_goal
+    global ac
+    # if the incoming goal isn't new.. simply break out of this function 
+    xGoal = incoming_goal.x
+    yGoal = incoming_goal.y 
+    
+    move_to_goal(xGoal, yGoal)
+    # arrived = move_to_goal(xGoal, yGoal)
+    # if(arrived) : print('yay') #goalsList.remove(goal)
+    # else: print('oh no') 
 
 
 
@@ -68,18 +65,7 @@ def stop_movement():
 
 
 
-def iterateThrough_goals(): 
-   print('iterating thru goals') 
-   if not goalsList : return
-
-   goal = goalsList.pop(0)
-   xGoal = goal.x
-   yGoal = goal.y 
-    
-   arrived = move_to_goal(xGoal, yGoal)
-   if(arrived) : print('yay') #goalsList.remove(goal)
-   else: print('oh no') 
-
+ 
 
 
 
@@ -128,8 +114,10 @@ if __name__ == '__main__':
    rospy.init_node('map_navigation', anonymous=False)
  
    print('start go to goal') 
+   listen_for_goals() 
+   listen_for_demands() 
 
-   listen_for_demands()    
+   rospy.spin()     
        
    
    
