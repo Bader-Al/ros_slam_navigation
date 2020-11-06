@@ -2,9 +2,9 @@
 import enum, select, os, sys, rospy
 from warnings import catch_warnings
 import time
-
-
 from geometry_msgs.msg import Point
+
+
 
 if os.name == 'nt':
   import msvcrt
@@ -12,13 +12,14 @@ else:
   import tty, termios
 
 
+
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 from locations.locations_parser import LocationsParser 
-
 from bot_subscriber import BotSubscriber
+
 
 
 class StartUpMenu_Selection(enum.Enum):
@@ -27,18 +28,15 @@ class StartUpMenu_Selection(enum.Enum):
     SwitchUser = 9
 
 
-
-
+DNE_GOAL_ERROR = "Goal does not exist in the database! Please make sure you select a name within the provided list"
 INVALID_GOAL_ERROR = "Invalid name! please enter a location name within the locations listed above"
 INVALID_SELECTION_ERROR = "Invalid Selection! please input a valid option from the list presented "
 
 parser = LocationsParser()
 
 class UserInterface:
-    initialized = False
 
     def __init__(self, skipWelcome = False,  ):
-        self.initialized=True
         self.nextGoal = [] # X Y Coordinates
         self.prevGoal = self.nextGoal[::]
         if not skipWelcome:  print("\nWelcome to PSU Tour Bot!\n")
@@ -48,16 +46,16 @@ class UserInterface:
 
             if menu_selection == StartUpMenu_Selection.Goal : 
                 goalName = self._present_setGoalMenu()
-                self.nextGoal = (goalName,parser.get_XY_Coordinates(goalName))
+                self.nextGoal = ( goalName,parser.get_XY_Coordinates(goalName) )
                 break
 
             elif menu_selection == StartUpMenu_Selection.Tour:
-                self.nextGoal = parser.get_positionNames()
+                self.nextGoal = parser.get_positionNames() ## TODO :: Must update to use sorted verison!
                 break
 
             elif menu_selection  == StartUpMenu_Selection.SwitchUser:
                 self._present_AdminPanel()
-                continue
+                 
 
             
 
@@ -88,8 +86,9 @@ class UserInterface:
                 print('\n\nDid you mean...\n')
                 for suggestedGoalName in matchedGoalInDatabase:
                     print(suggestedGoalName)
+                continue
             else: 
-                print(INVALID_GOAL_ERROR)
+                print(DNE_GOAL_ERROR)
                 
         print('selected goal name:', goalName)
         return goalName
@@ -148,7 +147,7 @@ class UserInterface:
             if user_selection == '1': self._Admin_present_SetFilePath() ## TODO : implement
             elif user_selection == '2': return self._Admin_present_AddLocations()
             elif user_selection == '3': return self._Admin_present_DeleteLocations()
-            elif user_selection == '9': return self._present_startupMenu()
+            elif user_selection == '9': return 
             elif user_selection == '4': 
                 parser.dump_positions()
                 time.sleep(3)
@@ -159,6 +158,7 @@ class UserInterface:
 
     def _Admin_present_SetFilePath(self):
         print("\n\nPATH_SET Still not implemented")
+        
         
         
     
@@ -174,11 +174,12 @@ class UserInterface:
           print("Finding similar location names to the one you provided..\n")
           lookupResult = parser.find_Location(locationName)
           if type(lookupResult) is set:
-              print("%s is unique, but you may want to consider similar items" %locationName)
+              print("%s matches some other records in the dictionary:" %locationName)
               for name in lookupResult: print(name)
               break
           elif type(lookupResult) is str:
-              print("%s ALREADY EXISTS in the database! You may EXIT or CONTINUE to OVERWRITE its coordinates" %locationName)
+              print ('\n\n---WARNING---\n')
+              print("%s ALREADY EXISTS in the database! Cancel OR OVERWRITE the saved location.." %locationName)
               break
           else: 
               print("Ace! Your desired name %s is very unique! That means nothing else looks like it in the databse"  %locationName)

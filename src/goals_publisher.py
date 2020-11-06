@@ -75,6 +75,8 @@ def dealWithUserGoal(goal):
          goalName = goal[0]
          goalCoordinates = goal[1] 
          publish_goal(goalName = goalName, goalCoordinates=goalCoordinates)
+
+    ## TODO :: This might need to return a LIST instead, because it seems to be breaking the tour's order     
     elif type(goal) == set : # If goal is a set it would contain the names of all goals in the given location {room_1, room_2, etc..}
          sortedGoalsDictList = getSortedGoalCoordinates(goalSetOfNames=goal) 
          for goal in sortedGoalsDictList:

@@ -4,7 +4,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import String
 
 from nav_msgs.msg import Odometry
-###  Unrelated To Core Functionality of this script ###  ######  ###  
+
 
 
 class BotSubscriber: 
@@ -34,9 +34,3 @@ class BotSubscriber:
         # print('now bot location X:', self.currentBotLocation.x)
         # print('now bot location Y:', self.currentBotLocation.y)
 
-
-## TODO :: Should implement getter that does check first before returning... then update methods that depend on this
-
-
-
-###  ######  Simply used for cal  ######  ######  ######  ######  ###
