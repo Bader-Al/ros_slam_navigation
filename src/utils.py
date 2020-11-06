@@ -5,6 +5,7 @@ class CoordinatesUtils:
 
   def getCoordinates_sortedByDistance(unsortedGoalsList, currentBotLocation, parser):
       ### NOT FOR PRODUCTION USE !
+      # delete later
       ''' 
 
     ___FLAWS OF IN THE USAGE OF THIS FUNCTION________________________________________________________________________________
