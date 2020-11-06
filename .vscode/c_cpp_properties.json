@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/bader/catkin_ws/devel/include/**",
+                "/opt/ros/noetic/include/**",
+                "/home/bader/catkin_ws/src/bader_alalami_cs460_major_exam/include/**",
+                "/home/bader/catkin_ws/src/RIA-E100/e100_description/include/**",
+                "/home/bader/catkin_ws/src/ros_basics_tutorials/include/**",
+                "/home/bader/catkin_ws/src/ros_essentials_cpp/include/**",
+                "/home/bader/catkin_ws/src/ros_service_assignment/include/**",
+                "/home/bader/catkin_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+                "/home/bader/catkin_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+                "/home/bader/catkin_ws/src/turtlebot3/turtlebot3_slam/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}

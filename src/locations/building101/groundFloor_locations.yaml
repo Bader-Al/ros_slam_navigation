@@ -1,0 +1,41 @@
+positions:
+  entrance_reception:
+    x: 0
+    y: 0
+  exit_reception:
+    x: 0
+    y: 0
+  iot_room_door: # TODO : as iterative improvement : nest the door door's location under this and make this iot_room 
+    x: 0
+    y: 0
+  alshegry_library_door:  
+    x: 0
+    y: 0
+  saadeddine_express_cafe:
+    x: 0
+    y: 0
+  main_auditorium_door:
+    x: 0
+    y: 0
+  math_department_door:
+    x: 0
+    y: 0
+  prince_salman_hall_door:
+    x: 0
+    y: 0
+  restroom_1: ## TODO : as iterative improvement : make this restroom[S] and have each restroom under this
+    x: 0
+    y: 0
+  restroom_2:
+    x: 0
+    y: 0
+  restroom_3:
+    x: 0
+    y: 0
+  restroom_4:
+    x: 0
+    y: 0
+  
+  
+  
+  
