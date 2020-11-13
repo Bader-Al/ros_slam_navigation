@@ -1,4 +1,5 @@
 #!/usr/bin/env python  
+from bot_client import BotClient
 import rospy
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
@@ -71,40 +72,41 @@ def stop_movement():
 
 #this method will make the robot move to the goal location
 def move_to_goal(xGoal,yGoal):
-   global ac
+    BotClient.move_to_goal(xGoal,yGoal)
+#    global ac
    
-   goal = MoveBaseGoal()
+#    goal = MoveBaseGoal()
    
-   # Set up the frame parameters
-   goal.target_pose.header.frame_id = "map"
-   goal.target_pose.header.stamp = rospy.Time.now()
+#    # Set up the frame parameters
+#    goal.target_pose.header.frame_id = "map"
+#    goal.target_pose.header.stamp = rospy.Time.now()
 
-   # Moving towards the goal */
-   goal.target_pose.pose.position =  Point(xGoal,yGoal,0)
-   goal.target_pose.pose.orientation.x = 0.0
-   goal.target_pose.pose.orientation.y = 0.0
-   goal.target_pose.pose.orientation.z = 0.0
-   goal.target_pose.pose.orientation.w = 1.0
+#    # Moving towards the goal */
+#    goal.target_pose.pose.position =  Point(xGoal,yGoal,0)
+#    goal.target_pose.pose.orientation.x = 0.0
+#    goal.target_pose.pose.orientation.y = 0.0
+#    goal.target_pose.pose.orientation.z = 0.0
+#    goal.target_pose.pose.orientation.w = 1.0
 
    
 
-   server_wait_duration = rospy.Duration.from_sec(5.0)
-   while(not ac.wait_for_server(server_wait_duration)): rospy.loginfo("Waiting for the move_base action server to come up")
+#    server_wait_duration = rospy.Duration.from_sec(5.0)
+#    while(not ac.wait_for_server(server_wait_duration)): rospy.loginfo("Waiting for the move_base action server to come up")
 
-   print('Sending goal to bot' , xGoal, yGoal)
-   ac.send_goal(goal)
+#    print('Sending goal to bot' , xGoal, yGoal)
+#    ac.send_goal(goal)
 
 
-   #wait for the action server to come up
-   ac.wait_for_result(rospy.Duration(60))
+#    #wait for the action server to come up
+#    ac.wait_for_result(rospy.Duration(60))
 
-   if(ac.get_state() ==  GoalStatus.SUCCEEDED):
-           rospy.loginfo("You have reached the destination")
-           return True
+#    if(ac.get_state() ==  GoalStatus.SUCCEEDED):
+#            rospy.loginfo("You have reached the destination")
+#            return True
 
-   else:
-           rospy.loginfo("The robot failed to reach the destination")
-           return False
+#    else:
+#            rospy.loginfo("The robot failed to reach the destination")
+#            return False
 
 
    

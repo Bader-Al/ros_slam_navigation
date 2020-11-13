@@ -1,5 +1,6 @@
 #!/usr/bin/env python  
 import enum, select, os, sys, rospy
+from bot_client import BotClient
 from warnings import catch_warnings
 import time
 from geometry_msgs.msg import Point
@@ -18,7 +19,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 from locations.locations_parser import LocationsParser 
-from bot_subscriber import BotSubscriber
+
 
 
 
@@ -242,8 +243,7 @@ class UserInterface:
 
     def _Admin_methods_LocationAutoInput(self, locationName):
         print("\nFetching bot coordinates..\n\n") 
-        botSub = BotSubscriber()
-        coords = botSub.get_current_location()
+        coords = BotClient.get_current_location()
         print('cords',coords)
         return coords
 
@@ -298,6 +298,8 @@ if __name__ == "__main__":
         write unit tests for certain functions
 
     """
+    
+    rospy.init_node('user_interface_test', anonymous=False)
 
     sectionSplitter = '----------' # UI Element [IGNORE]
 

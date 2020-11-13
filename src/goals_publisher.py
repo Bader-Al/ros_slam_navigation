@@ -17,7 +17,7 @@ from user_interface import UserInterface
 from locations.locations_parser import LocationsParser
 from utils import CoordinatesUtils
 
-from bot_subscriber import BotSubscriber
+from bot_client import BotClient
 
 
 
@@ -26,8 +26,7 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import String
 
  
-userInterface = None
-botSubscriber = None 
+userInterface = None 
 parser = LocationsParser()
 
 
@@ -81,7 +80,7 @@ def _getSortedGoalCoordinates(goalSetOfNames):
         tempDict.update({'name' : goalName ,"coordinates": XY_coordinates, } )
         unsortedCoordinatesDictList.append(tempDict)
 
-    botLocation = botSubscriber.get_current_location()     
+    botLocation = BotClient.get_current_location()     
     orderedDictList = CoordinatesUtils.getCoordinates_sortedByDistance( unsortedCoordinatesDictList,botLocation, parser )
     # print(orderedDictList)
     return orderedDictList
@@ -89,12 +88,14 @@ def _getSortedGoalCoordinates(goalSetOfNames):
 
 
 
-def publish_tour_goals(sortedGoalsDictList):
-    print("Starting tour!")
+def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
 
+    ## BASE CASE
     if(len(sortedGoalsDictList) < 1):
         print("Tour has ended!")
         return get_UserGoal(skipWelcome=True)
+    
+    print("Starting tour!")
 
     goal = sortedGoalsDictList.pop(0)
     _goalName = goal['name']
@@ -103,7 +104,7 @@ def publish_tour_goals(sortedGoalsDictList):
     # if 'toilet' in _goalName:continue ## Skips toilet in tours
     publish_goal(_goalName,_goalCoords, tour_mode=True)
     print ("Next goal coming up")
-    botLocation = botSubscriber.get_current_location() 
+    botLocation = BotClient.get_current_location() 
     newlyOrderedDictList = CoordinatesUtils.getCoordinates_sortedByDistance( sortedGoalsDictList,botLocation, parser )
     print(newlyOrderedDictList) 
     return publish_tour_goals(newlyOrderedDictList)
@@ -129,10 +130,13 @@ def publish_goal(goalName,goalCoordinates, tour_mode= False):
           elif action == '0' : emergency_stop()   # TODO :: Still not implemented properly
 
         else:
-          botLocation = botSubscriber.get_current_location()
+          botLocation = BotClient.get_current_location()
           deltaX = abs(botLocation.x - xGoal)
           deltaY = abs(botLocation.y - yGoal)
-          threshold = 0.08
+          threshold = 0.025
+          
+        #   botSubscriber.get_bot_state()
+          print('WORKINGGG',BotClient.get_bot_state())
           
           if( deltaX*deltaY < threshold ):
            print("Arrived!")
@@ -169,8 +173,7 @@ def send_move():
 
 if __name__ == "__main__":
     
-    rospy.init_node('goals_publisher', anonymous=True)
-    botSubscriber = BotSubscriber()
+    rospy.init_node('goals_publisher', anonymous=True) 
     get_UserGoal()
 
     
