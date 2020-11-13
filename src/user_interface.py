@@ -101,7 +101,7 @@ class UserInterface:
         print("with Coordinates: ")
         print(locationCoords)
         print('\n[1] - Add location to que\n[2] - Clear location and start over\n\n[0] - Emergency STOP & SHUTDOWN\n\n')
-        key = self.__getKey()
+        key = UserInterface.getKey()
         return key
 
 
@@ -143,7 +143,7 @@ class UserInterface:
         
         while True: 
             user_selection=''
-            user_selection = self.__getKey()
+            user_selection = UserInterface.getKey()
 
             if user_selection == '1': self._Admin_present_SetFilePath() ## TODO : implement
             elif user_selection == '2': return self._Admin_present_AddLocations()
@@ -191,7 +191,7 @@ class UserInterface:
         coordinates = Point()
         while True:
           #Handle methedology OR EXIT   
-          userInput = self.__getKey()
+          userInput = UserInterface.getKey()
           if(userInput == '0'):return self._present_AdminPanel() 
           
           elif(userInput == '1'): # Auto Coordinates
@@ -266,8 +266,8 @@ class UserInterface:
 
 
 # Utility method used to get raw input from keyboard instantly.. This was taken from Turtlesim code base where teleop takes [W A S D X] keys to control bot
-
-    def __getKey(self):
+    @staticmethod
+    def getKey( ):
         if os.name == 'nt':
             return msvcrt.getch()
         

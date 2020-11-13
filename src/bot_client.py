@@ -11,33 +11,26 @@ from nav_msgs.msg import Odometry
 
 from geometry_msgs.msg import PoseWithCovarianceStamped 
 
-## TODO : switch to AMCL instead of odometery
 
 
 
 class BotClient: 
     
+    
+    # prev_goal = None
+    
+    
     currentBotLocation = Point()
-    ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-
-    # def __init__(self, ):
-        # self.currentBotLocation = Point()
-        # self.listen_for_pose()
-        # self.ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
-
+    
         
-
-    @staticmethod
-    def get_bot_state( ):
-        BotClient.ac.wait_for_result(rospy.Duration(60))
-        return BotClient.ac.get_state()
+    statusPublisher = rospy.Publisher('move_status', String, queue_size= 10) ##  
     
-    
+    ac = actionlib.SimpleActionClient("move_base", MoveBaseAction)
+        
     @staticmethod
-    def move_to_goal( xGoal,yGoal):   
+    def move_to_goal( xGoal,yGoal):
+                       
         goal = MoveBaseGoal()
-   
-        # Set up the frame parameters
         goal.target_pose.header.frame_id = "map"
         goal.target_pose.header.stamp = rospy.Time.now()
 
@@ -57,13 +50,22 @@ class BotClient:
 
         #wait for the action server to come up
         BotClient.ac.wait_for_result(rospy.Duration(60))
+        action_state = BotClient.ac.get_state() 
+        
+        
 
-        if(BotClient.ac.get_state() ==  GoalStatus.SUCCEEDED):
+        if(action_state ==  GoalStatus.SUCCEEDED):
            rospy.loginfo("You have reached the destination")
+           BotClient.publish_status(1) # OK
+           return True
+        elif(action_state ==  GoalStatus.REJECTED):
+           rospy.loginfo("Bot action server rejected your goal!")
+           BotClient.publish_status(0) # BUSY
            return True
 
         else:
            rospy.loginfo("The robot failed to reach the destination")
+           BotClient.publish_status(2) # WAIT
            return False
 
     
@@ -73,25 +75,30 @@ class BotClient:
         time.sleep(2) ## TODO :: Make it wait properly
         return BotClient.currentBotLocation
     
+    
+    
+    @staticmethod
+    def publish_status(status_int): 
+        if status_int == 0: BotClient.statusPublisher.publish("BUSY")
+        elif status_int == 1: BotClient.statusPublisher.publish("OK")
+        elif status_int == 2: BotClient.statusPublisher.publish("WAIT")
+            
         
     @staticmethod
     def listen_for_pose( ):
         # rospy.Subscriber("odom", Odometry, self.updateBotLocation_ODOM)
-        rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, BotClient.updateBotLocation_AMCL)
-        print('Listening for pose')
+        rospy.Subscriber("amcl_pose", PoseWithCovarianceStamped, BotClient.updateBotLocation_AMCL) 
         
 
     @staticmethod
-    def updateBotLocation_ODOM(self,odomMsg):
-        self.currentBotLocation
-        self.currentBotLocation.x = odomMsg.pose.pose.position.x
-        self.currentBotLocation.y = odomMsg.pose.pose.position.y
-        self.currentBotLocation.z = odomMsg.pose.pose.position.z
+    def updateBotLocation_ODOM(odomMsg):
+        BotClient.currentBotLocation.x = odomMsg.pose.pose.position.x
+        BotClient.currentBotLocation.y = odomMsg.pose.pose.position.y
+        BotClient.currentBotLocation.z = odomMsg.pose.pose.position.z
         
     @staticmethod
     def updateBotLocation_AMCL(AMCL_POSE):
-        print('updating pose')
-        BotClient.currentBotLocation
+        # print('updating pose')
         BotClient.currentBotLocation.x = AMCL_POSE.pose.pose.position.x
         BotClient.currentBotLocation.y = AMCL_POSE.pose.pose.position.y
         BotClient.currentBotLocation.z = AMCL_POSE.pose.pose.position.z
@@ -99,8 +106,11 @@ class BotClient:
         
 
 if __name__ =='__main__' :
+    
+    ## TEST METHOD
+    
     rospy.init_node('bot_subscriber', anonymous=True)
-    # BotClient = BotClient()
+    # botClient = BotClient()
     BotClient.move_to_goal(0.8803472795836789,3.07251281622427)
     print('Runing bot subscribber test')
     BotClient.listen_for_pose()

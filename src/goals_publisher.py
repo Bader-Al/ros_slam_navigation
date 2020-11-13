@@ -28,6 +28,7 @@ from std_msgs.msg import String
  
 userInterface = None 
 parser = LocationsParser()
+bot_status = 'WAIT'
 
 
 coordPublisher = rospy.Publisher('goal_coordinates', Point, queue_size=10)  ## Sends Coordinates as [X,Y,Z] ... Example :: [0.232342 , 0.454532 , 0 ]
@@ -36,26 +37,36 @@ commandPublisher = rospy.Publisher('goal_demands', String, queue_size= 10) ## Se
 
 
 
-def cancel_and_getGoal():
-    send_clear()
-    return get_UserGoal( skipWelcome=True)
+
+def listen_bot_status(): 
+    print('listening')
+    rospy.Subscriber('move_status', String,set_bot_status)
+    # rospy.spin()
+
+def set_bot_status(incoming_stat): 
+    global bot_status
+    if bot_status == incoming_stat.data:return
+    bot_status = incoming_stat.data
+    print('Set bot status to', bot_status )
+
 
 
 
 def get_UserGoal(skipWelcome = False):
     global userInterface
-
     ## The way it reinits the user interface depends on wether it was initialized before (To skip welcome)
     if (skipWelcome): userInterface = UserInterface(skipWelcome=True)
     else: userInterface = UserInterface(skipWelcome=True)
 
     userGoal=None
     userInterfaceOutput = iter(userInterface)
-    while True:
+    while not rospy.is_shutdown():
         try: userGoal = next(userInterfaceOutput)
         except StopIteration: 
+            listen_bot_status()
             dealWithUserGoal(goal=userGoal)
         time.sleep(1)
+    return     
 
 
 def dealWithUserGoal(goal):
@@ -66,10 +77,12 @@ def dealWithUserGoal(goal):
          publish_goal(goalName = goalName, goalCoordinates=goalCoordinates)
 
     elif type(goal) == set : # If goal is a set it would contain the names of all goals in the given location {room_1, room_2, etc..}
-         sortedGoalsDictList = _getSortedGoalCoordinates(goalSetOfNames=goal) 
+         sortedGoalsDictList = _getSortedGoalCoordinates(goalSetOfNames=goal)
+         print("Starting tour!") 
          publish_tour_goals(sortedGoalsDictList)
 
     else: print("something went wrong..",goal)
+
 
 
 def _getSortedGoalCoordinates(goalSetOfNames):
@@ -85,9 +98,6 @@ def _getSortedGoalCoordinates(goalSetOfNames):
     # print(orderedDictList)
     return orderedDictList
 
-
-
-
 def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
 
     ## BASE CASE
@@ -95,7 +105,6 @@ def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
         print("Tour has ended!")
         return get_UserGoal(skipWelcome=True)
     
-    print("Starting tour!")
 
     goal = sortedGoalsDictList.pop(0)
     _goalName = goal['name']
@@ -106,8 +115,8 @@ def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
     print ("Next goal coming up")
     botLocation = BotClient.get_current_location() 
     newlyOrderedDictList = CoordinatesUtils.getCoordinates_sortedByDistance( sortedGoalsDictList,botLocation, parser )
-    print(newlyOrderedDictList) 
-    return publish_tour_goals(newlyOrderedDictList)
+    # print(newlyOrderedDictList) # Was for testing that the dict is re-ordered everytime this is called (closest goal changes as the bot's location changes)
+    return publish_tour_goals(newlyOrderedDictList) # RECURSE
 
 
        
@@ -116,10 +125,16 @@ def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
 
 def publish_goal(goalName,goalCoordinates, tour_mode= False): 
     print('publish function') 
-    while not rospy.is_shutdown(): 
+    while not rospy.is_shutdown():
         xGoal, yGoal = goalCoordinates
+        
+        if(bot_status == "BUSY"):
+            print('Publish Failed! Returning to main screen....')
+            time.sleep(2)
+            demand_clear()
+            return get_UserGoal( skipWelcome=True)
 
-        send_move()
+        demand_move()
         print('publishing', goalName)
         coordPublisher.publish(Point(xGoal,yGoal,0)) 
         
@@ -129,52 +144,58 @@ def publish_goal(goalName,goalCoordinates, tour_mode= False):
           elif action == '2' : return cancel_and_getGoal()  # TODO :: Should allow user to input new goal after stopping bot!!
           elif action == '0' : emergency_stop()   # TODO :: Still not implemented properly
 
-        else:
+        else:  
           botLocation = BotClient.get_current_location()
           deltaX = abs(botLocation.x - xGoal)
           deltaY = abs(botLocation.y - yGoal)
           threshold = 0.025
+          print(bot_status)
           
-        #   botSubscriber.get_bot_state()
-          print('WORKINGGG',BotClient.get_bot_state())
-          
-          if( deltaX*deltaY < threshold ):
+          if( deltaX*deltaY < threshold and bot_status=='OK'):
            print("Arrived!")
-
            return True  
-       
+          
+        
         
 
         """ rate.sleep() Doesn't work here due to the interface waiting for the user input to return an action..
             Therefore publishing is controlled by a factor of time 
         """
+     
+    return get_UserGoal(skipWelcome = True)
 
+
+
+
+
+def cancel_and_getGoal():
+    demand_clear()
+    return get_UserGoal( skipWelcome=True)
 
 
 def emergency_stop():
     print('Emergency STOP & SHUTDOWN initiated\n\n')
     # TODO :: Must stop bot!
-    send_stop()
+    demand_clear()
     rospy.signal_shutdown("User shutdown")
     sys.exit()
 
 
-def send_stop():
+def demand_clear():
     for i in range(50):commandPublisher.publish("STOP")
 
-def send_clear():
+def demand_clear():
     for i in range(25):commandPublisher.publish("CLEAR")
  
 
-def send_move():
+def demand_move():
     commandPublisher.publish("MOVE")
  
 
 
 if __name__ == "__main__":
-    
-    rospy.init_node('goals_publisher', anonymous=True) 
-    get_UserGoal()
+    rospy.init_node('goals_publisher', anonymous=True)  
+    get_UserGoal() 
 
     
     
