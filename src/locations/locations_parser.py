@@ -4,6 +4,9 @@ import time
 import yaml
 from pathlib import Path
 
+from os import listdir
+from os.path import isfile, join, isdir
+
 from geometry_msgs.msg import Point 
 
 
@@ -11,12 +14,42 @@ from geometry_msgs.msg import Point
 class LocationsParser:
     def __init__(self, file_path = "sim/house_locations.yaml", ):
         self.relative_path = file_path
-        my_path = Path(__file__).resolve()  # resolve to get rid of any symlinks
-        self.locations_path = my_path.parent / file_path
-        self.locationsDictionary = self.__loadDictionaryFromYaml()
- 
+        self.my_path = Path(__file__).resolve()  # resolve to get rid of any symlinks
+        self.load_dict()
+        
+    def load_dict(self):
+        self.locations_path = self.my_path.parent / self.relative_path
+        self.locationsDictionary = self.__loadDictionaryFromYaml()    
+        
+    def switch_current_database(self, directory_name ="", file_name="" ):
+        print("Switching DB")
+        
+    def find_database_directories(self): 
+        onlydirs = [directory for directory in listdir(self.my_path.parent) if isdir(join(self.my_path.parent,directory)) 
+                    and 'cache' not in directory ]
+        return onlydirs
+    
+    
+    def get_fileNames(self, database_directory="sim"):
+        files_path = self.my_path.parent/database_directory
+        try: 
+             listdir(files_path)
+             onlyfiles = [file for file in listdir(files_path) if isfile(join(files_path, file))]
+             return onlyfiles
+        except : 
+            print("No such path!")
+            return Exception("Path does not exist")
+    
+    
     def getRelativePath(self):
         return self.relative_path
+    
+    def set_relativePath(self, relative_path):
+        try:
+            self.relative_path = relative_path
+            self.load_dict()
+            return True
+        except: return False
 
     def find_Location(self, desiredLocation_name):
         assert desiredLocation_name.strip() != "" , "Location name is empty!"
@@ -35,13 +68,15 @@ class LocationsParser:
         with open( self.locations_path  , 'w') as outfile:
           print('writing to file')
           yaml.dump(self.locationsDictionary, outfile, default_flow_style=False)
+          outfile.close()
 
     def delete_Location(self, location_name):
         assert location_name.strip() != "" , "Location name is empty!" 
         del self.locationsDictionary['positions'][location_name]
         with open( self.locations_path  , 'w') as outfile:
          print ('writing to file')
-         yaml.dump(self.locationsDictionary, outfile, default_flow_style=False) 
+         yaml.dump(self.locationsDictionary, outfile, default_flow_style=False)
+         outfile.close() 
 
     def get_XY_Coordinates(self, location_name ):
         assert location_name.strip() != "" , "Location name is empty!"
@@ -171,7 +206,37 @@ if __name__ == "__main__":
         print(sectionSplitter)
     elif type(suggestedLocationNames) == str:
         print("Unique item found!", testLocationName )
+        
+        
+    print("\n\n\nNext test is to find all database directories in locations directory")
     
+    directories = parser.find_database_directories()
+    print(directories) 
+    dirSelection=""
+    while True:
+        dirSelection = input('\n\nPlease select a database:')
+        print(directories)
+        if dirSelection in directories:break
+        else: print("Please ensure that you inputted the right directory name!")
+    
+    files = parser.get_fileNames(database_directory=dirSelection)
+    print(files)
+    fileSelection = ""
+    while True:
+        fileSelection = input('\n\nPlease select a file:')
+        print(files)
+        if fileSelection in files:break
+        else: print("Please ensure that you inputted the right directory name!")
+    
+    
+    new_path=dirSelection+'/'+fileSelection
+    print("Switching DB to", new_path)
+    parser.set_relativePath(new_path)
+    
+    time.sleep(2)
+    parser.dump_positions()
+    
+     
     
     print('\nTests complete...\n')
 
