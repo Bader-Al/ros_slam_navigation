@@ -11,6 +11,8 @@ from geometry_msgs.msg import Point
 
 
 
+
+
 class LocationsParser:
     def __init__(self, file_path = "sim/house_locations.yaml", ):
         self.relative_path = file_path
