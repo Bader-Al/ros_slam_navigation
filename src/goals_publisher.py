@@ -39,7 +39,7 @@ commandPublisher = rospy.Publisher('goal_demands', String, queue_size= 10) ## Se
 
 
 def listen_bot_status(): 
-    print('listening')
+    # print('listening')
     rospy.Subscriber('move_status', String,set_bot_status)
     # rospy.spin()
 
@@ -55,8 +55,7 @@ def set_bot_status(incoming_stat):
 def get_UserGoal(skipWelcome = False):
     global userInterface
     ## The way it reinits the user interface depends on wether it was initialized before (To skip welcome)
-    if (skipWelcome): userInterface = UserInterface(skipWelcome=True)
-    else: userInterface = UserInterface(skipWelcome=True)
+    userInterface = UserInterface(skipWelcome =skipWelcome)
 
     userGoal=None
     userInterfaceOutput = iter(userInterface)
@@ -104,13 +103,12 @@ def publish_tour_goals(sortedGoalsDictList): ## RECURSIVE METHOD
     if(len(sortedGoalsDictList) < 1):
         print("Tour has ended!")
         return get_UserGoal(skipWelcome=True)
-    
 
     goal = sortedGoalsDictList.pop(0)
     _goalName = goal['name']
     _goalCoords = goal['coordinates']
     _goalDistance = goal['distance']
-    # if 'toilet' in _goalName:continue ## Skips toilet in tours
+    # if _goalCoords ==[0,0]:continue
     publish_goal(_goalName,_goalCoords, tour_mode=True)
     print ("Next goal coming up")
     botLocation = BotClient.get_current_location() 

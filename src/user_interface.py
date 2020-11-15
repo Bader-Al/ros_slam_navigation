@@ -42,7 +42,7 @@ class UserInterface:
         self.prevGoal = self.nextGoal[::]
         if not skipWelcome:  print("\nWelcome to PSU Tour Bot!\n")
 
-        while True:
+        while not rospy.is_shutdown():
             menu_selection = self._present_startupMenu()
 
             if menu_selection == StartUpMenu_Selection.Goal : 
@@ -73,7 +73,7 @@ class UserInterface:
         locationNames = parser.get_positionNames()
         for name in locationNames:
             print(name)
-        while True:
+        while not rospy.is_shutdown():
             userGoalInput = input('\nGoal Location: ')
 
             if len(userGoalInput) < 3: print(INVALID_GOAL_ERROR);continue
@@ -109,7 +109,7 @@ class UserInterface:
 
     def _present_startupMenu(self):
 
-        while True:
+        while not rospy.is_shutdown():
             print(" \n1 - Take a tour\n2 - Set goal location\n3 - View All Locations\n----------------------\n9 - Admin Panel\n0 - Exit\n\n")
             user_selection = str(input())
             user_selection = user_selection.strip().lower()
@@ -139,13 +139,13 @@ class UserInterface:
         [3] - Delete location
         [4] - View all Locations\n \
         \n------------------------------------\
-        \n[9] - Back to Main Menu\n ''' %parser.getRelativePath() )
+        \n[9] - Back to Main Menu\n ''' %parser.get_relativePath() )
         
-        while True: 
+        while not rospy.is_shutdown(): 
             user_selection=''
             user_selection = UserInterface.getKey()
 
-            if user_selection == '1': self._Admin_present_SetFilePath() ## TODO : implement
+            if user_selection == '1': return self._Admin_present_DB_Menu() ## TODO : implement
             elif user_selection == '2': return self._Admin_present_AddLocations()
             elif user_selection == '3': return self._Admin_present_DeleteLocations()
             elif user_selection == '9': return 
@@ -155,17 +155,76 @@ class UserInterface:
                 return self._present_AdminPanel()
             
  
+    def _Admin_present_DB_Menu(self): 
+        print("\n\n\n\n\n\nCurrent database directory: [%s] \n\n" %parser.get_relativePath()  )
+        print('''[1] - Change full path [building/floor_name]\
+                \n[2] - Change file path (ex. floor1, floor2, etc..)\
+                \n\n----------------------------\n[0] - Cancel\n''' )
+        while not rospy.is_shutdown():
+            key = UserInterface.getKey()
+            if key == '0' : return self._present_AdminPanel()
+            elif key == '1' : return self._Admin_present_setFullPath()
+            elif key == '2' : print('ok')
+            elif key == '3' : print('ok')
+             
+            
 
+    def _Admin_present_setFullPath(self):
+        directory = self._Admin_present_getDirectory()
+        file = self._Admin_present_getFile(directory)
+        full_relativePath = "%s/%s" %(directory, file)
+        print(full_relativePath)
+        parser.set_relativePath(relative_path=full_relativePath)
+        return
 
-    def _Admin_present_SetFilePath(self):
-        print("\n\nPATH_SET Still not implemented")
+    def _Admin_present_getDirectory(self):
+        print('\n\nPlease select a directory\n\n')
+        directories = ['null']
+        directories.extend(parser.find_database_directories()) 
+        selected_directory = None
+        for index, directory in enumerate(directories):
+            if index == 0:continue
+            print('[%d] - %s' %(index, directory))
+        print('\n\n----------------------------')
+        print('[0] - Cancel\n\n')        
+        while not rospy.is_shutdown():
+            user_in = input("\n")
+            try:
+                selected_directory = directories[(int(user_in))]
+                break
+            except:
+                print("Invalid input!")
+                continue
+        print("Selected directory:", selected_directory)
+        return selected_directory    
+        
+    def _Admin_present_getFile(self, directory_name):
+        print('\n\nPlease select a file\n\n')
+        files = ['null']
+        files.extend(parser.get_fileNames(database_directory=directory_name) ) 
+        selected_file = None
+        for index, directory in enumerate(files):
+            if index == 0:continue
+            print('%d - %s' %(index, directory))
+        print('\n\n----------------------------')
+        print('[0] - Cancel\n\n')        
+        while not rospy.is_shutdown():
+            user_in = input("\n")
+            try:
+                selected_file = files[(int(user_in))]
+                break
+            except:
+                print("Invalid input!")
+                continue
+        print("Selected file:", selected_file)
+        return selected_file          
         
         
         
-    
+ 
     def _Admin_present_AddLocations(self):
         
-        while True:
+        while not rospy.is_shutdown():
           #Handle location name  
           locationName = input('\nLocation name to be added:')
           print('\n')  
@@ -189,7 +248,7 @@ class UserInterface:
 
         print("How would you like to provide the coordinates: \n[0] - Cancel\n[1] - Auto-Detect\n[2] - Manual input\n[9] - Change name")
         coordinates = Point()
-        while True:
+        while not rospy.is_shutdown():
           #Handle methedology OR EXIT   
           userInput = UserInterface.getKey()
           if(userInput == '0'):return self._present_AdminPanel() 
@@ -210,18 +269,8 @@ class UserInterface:
 
         parser.insert_Location(locationName, coordinates_point=coordinates )
         return self._present_AdminPanel()
-
-
-
-
-
-
-        #   try: 
-        #       parser.delete_Location(location_name=locationToBeDeleted)
-        #       print("Successfully deleted", locationToBeDeleted)
-        #   except: print("\n\n[-][!] Deletion failed! This typically means that the location DNE in the DB")
+ 
     
-
     def _Admin_methods_LocationManualInput(self):
         print("Please the coordinates:")
         X = None
@@ -252,7 +301,7 @@ class UserInterface:
 
 
     def _Admin_present_DeleteLocations(self):
-        while True:
+        while not rospy.is_shutdown():
           locationToBeDeleted = input("\n'0' - main menu\n'1' - admin menu\n\nLocation to be deleted:")
           if locationToBeDeleted == '0':return self._present_startupMenu()
           elif locationToBeDeleted == '1' : return self._present_AdminPanel()

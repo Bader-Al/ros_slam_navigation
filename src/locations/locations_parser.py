@@ -14,7 +14,7 @@ from geometry_msgs.msg import Point
 
 
 class LocationsParser:
-    def __init__(self, file_path = "sim/house_locations.yaml", ):
+    def __init__(self, file_path = "building101/firstFloor_locations.yaml", ):
         self.relative_path = file_path
         self.my_path = Path(__file__).resolve()  # resolve to get rid of any symlinks
         self.load_dict()
