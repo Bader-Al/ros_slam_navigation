@@ -146,7 +146,7 @@ def publish_goal(goalName,goalCoordinates, tour_mode= False):
           botLocation = BotClient.get_current_location()
           deltaX = abs(botLocation.x - xGoal)
           deltaY = abs(botLocation.y - yGoal)
-          threshold = 0.025
+          threshold = 0.5
           print(bot_status)
           
           if( deltaX*deltaY < threshold and bot_status=='OK'):
