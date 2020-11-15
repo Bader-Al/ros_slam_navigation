@@ -21,8 +21,6 @@ class LocationsParser:
         self.locations_path = self.my_path.parent / self.relative_path
         self.locationsDictionary = self.__loadDictionaryFromYaml()    
         
-    def switch_current_database(self, directory_name ="", file_name="" ):
-        print("Switching DB")
         
     def find_database_directories(self): 
         onlydirs = [directory for directory in listdir(self.my_path.parent) if isdir(join(self.my_path.parent,directory)) 
@@ -30,7 +28,13 @@ class LocationsParser:
         return onlydirs
     
     
+    
+    
+    
     def get_fileNames(self, database_directory="sim"):
+        directories = self.find_database_directories()
+        assert database_directory in directories , print("Directory %s not found" %database_directory)
+        
         files_path = self.my_path.parent/database_directory
         try: 
              listdir(files_path)
@@ -41,7 +45,7 @@ class LocationsParser:
             return Exception("Path does not exist")
     
     
-    def getRelativePath(self):
+    def get_relativePath(self):
         return self.relative_path
     
     def set_relativePath(self, relative_path):
@@ -129,7 +133,7 @@ if __name__ == "__main__":
     print("\n\nRunning parser test... If you're not expecting to see this please run a node for example [ goals_publisher | user_interface ] \n\n")
 
 
-    print(parser.getRelativePath())
+    print(parser.get_relativePath())
 
 
     #TESTING BASE FUNCTIONALITY [Retreiving Information]
